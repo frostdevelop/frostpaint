@@ -3,6 +3,9 @@
 <head>
   <title>FrostPaint</title>
   <style>
+	html {
+		color-scheme: dark;
+	}
     body {
       padding: 0 5vw;
       color: #EEE;
@@ -20,7 +23,7 @@
       --height: 6px;
     }
     input:focus,select:focus {outline:none;}
-    input:active,select:active,input[type="text"]:focus,.button:active {background: linear-gradient(to left top, #292929, #121212)};
+    input:active,select:active,input[type="text"]:focus,.button:active {background-image: linear-gradient(to left top, #292929, #121212)};
     .button,input,select {font-family: Tahoma, Arial, sans-serif;}
     input:active,select:active,input[type="text"]:focus,.button:active {
       box-shadow: 2px 2px var(--height) rgba(0,0,0,0.7) inset, -2px -2px var(--height) rgba(240,240,240,0.3) inset;
@@ -29,7 +32,7 @@
     details,input,select,.button,.fp-grad-stop-cont-cont {border: var(--border) #292929 solid;box-shadow: 2px 2px var(--height) rgba(0,0,0,0.7), -2px -2px var(--height) rgba(240,240,240,0.3);}
     input,select {
       transition: box-shadow 500ms ease, border 500ms ease;
-      background: linear-gradient(to left top, #121212, #292929);
+      background-image: linear-gradient(to left top, #121212, #292929);
       color: currentcolor;
       font-size: 13px;
       padding: 10px;
@@ -37,7 +40,7 @@
       border-radius: var(--radius);
       min-width:0px;
     }
-    select {background:#222}
+    select {background-color:#222}
     input:hover,select:hover,.button:hover {border-color: var(--hover);}
     .smallinput {width:10em}
     .button {
@@ -47,7 +50,7 @@
       align-content: center;
       align-items: center;
       cursor: pointer;
-      background: linear-gradient(to left top, #121212, #292929);
+      background-image: linear-gradient(to left top, #121212, #292929);
       color: currentColor;
       transition: box-shadow 500ms ease, border 500ms ease;
       font-size: 13px;
@@ -75,26 +78,26 @@
       border-radius: 20px;
       padding: 10px;
       margin: 10px;
-      /*background: linear-gradient(to left top, #121212, #292929);*/
+      /*background-image: linear-gradient(to left top, #121212, #292929);*/
     }
     details[open] > summary {
       border-bottom: rgba(255,255,255,0.2) solid 2px;
       margin-bottom: 10px;
     }
     .gbtn {
-      background: linear-gradient(135deg,#33ff33,#11c011);
+      background-image: linear-gradient(135deg,#33ff33,#11c011);
       box-shadow: 2px 2px var(--height) rgba(0,0,0,0.8),-2px -2px var(--height) #33ff33;
       border-color:#11c011;
     }
     .gbtn:hover {border-color:#33ff33;}
     .gbtn:active {background: linear-gradient(-45deg,#33ff33,#11c011);box-shadow: inset 2px 2px var(--height) rgba(0,0,0,0.8),inset -2px -2px var(--height) #33ff33;}
     .rbtn {
-      background: linear-gradient(135deg,#f95353,#a51212);
+      background-image: linear-gradient(135deg,#f95353,#a51212);
       box-shadow: 2px 2px var(--height) rgba(0,0,0,0.8),-2px -2px var(--height) #f95353;
       border-color: #a51212;
     }
     .rbtn:hover {border-color: #f95353}
-    .rbtn:active {background: linear-gradient(-45deg,#f95353,#a51212);box-shadow: inset 2px 2px var(--height) rgba(0,0,0,0.8), inset -2px -2px var(--height) #f95353;}
+    .rbtn:active {background-image: linear-gradient(-45deg,#f95353,#a51212);box-shadow: inset 2px 2px var(--height) rgba(0,0,0,0.8), inset -2px -2px var(--height) #f95353;}
     /*End PacifikyNeoDark*/
     .fp-toggle-cont > summary {
       list-style-type: "☐ ";
@@ -522,6 +525,20 @@
   </div>
   <footer>Tested by Ayden<br/>Copyright 2024 Pacifiky. All rights reserved.</footer>
   <script>
+	class storageEmulator {
+		constructor(){
+			this.db = new Map();
+		}
+		getItem(id){
+			return this.db.get(id) || null;
+		}
+		setItem(id,data){
+			this.db.set(id,data);
+		}
+		removeItem(id){
+			this.db.remove(id);
+		}
+	}
     //class for draw
     class fpaint {
       constructor(canv,inp,inp2) {
@@ -544,6 +561,13 @@
         this.cctx = this.ccanvas.getContext("2d",{ willReadFrequently: true });
         this.octx = this.ocanvas.getContext("2d",{ willReadFrequently: true });
         this.curctx = this.curcanvas.getContext("2d",{ willReadFrequently: true });
+		try{
+			this.storage = localStorage;
+		}catch(e){
+			console.warn("localStorage unavailable, loading polyfill\nError: " + e.stack);
+			alert("WARNING! Native storage api unavailable, files will be flushed on exit.");
+			this.storage = new storageEmulator();
+		}
         this.clr = "#000000";
         this.md = false;
         this.selection = [false,new Path2D()];
@@ -891,8 +915,8 @@
         this.inp_tmload_btn.addEventListener("click",this.ldtmtx);
         this.inp_tmapply_btn.addEventListener("click",this.aptmtx);
         this.inp_grad_switch_btn.addEventListener("click",this.switchgrad);
-        this.inp_delsav_btn.addEventListener("click",e=>{localStorage.removeItem("fp-font-storage")});
-        this.savedfonts = JSON.parse(localStorage.getItem("fp-font-storage")) || [];
+        this.inp_delsav_btn.addEventListener("click",e=>{this.storage.removeItem("fp-font-storage")});
+        this.savedfonts = JSON.parse(this.storage.getItem("fp-font-storage")) || [];
         for(let i=0;i<this.savedfonts.length;i++){this.loadFont(this.savedfonts[i][0],this.savedfonts[i][1])};
         for(let i=0;i<this.dash_sect_conts.length;i++){this.addDashListener(i)};
         for(let i=0;i<this.inp_filter_conts.length;i++){
@@ -1603,7 +1627,7 @@
       }
       saveFont(name,url) {
         this.savedfonts.push([name,url]);
-        localStorage.setItem("fp-font-storage",JSON.stringify(this.savedfonts));
+        this.storage.setItem("fp-font-storage",JSON.stringify(this.savedfonts));
       }
       updstroke() {
         this.strokectx.clearRect(0,0,this.strokedisp.width,this.strokedisp.height);
@@ -2008,10 +2032,11 @@
     const projsavbtn = controls.getElementsByClassName("projsavbtn")[0];
     const loadprojcont = controls.getElementsByClassName("loadprojcont")[0];
     const projSelect = controls.getElementsByClassName("proj-select")[0];
-    let projs = JSON.parse(localStorage.getItem("fp-ext-projs")) || [];
     //try{
     let painter = new fpaint(document.getElementById("controls").getElementsByClassName("canvascont")[0].children[0],document.getElementById("controls").getElementsByClassName("conpaint")[0],document.getElementById("controls").getElementsByClassName("topConpaint")[0]);
     //}catch(e){alert(e)}
+    let projs = JSON.parse(painter.storage.getItem("fp-ext-projs")) || [];
+	
     function trig0f(e) {
       let dwnlin = document.createElement('a');
       dwnlin.download = (controls.getElementsByClassName("filnameinp")[0].value || "Untitled") + "-FrostPaint.png";
@@ -2061,17 +2086,17 @@
         projs.push([rname,painter.canvas.toDataURL()]);
         addProj(projs.length-1);
       }
-      localStorage.setItem("fp-ext-projs",JSON.stringify(projs));
+      painter.storage.setItem("fp-ext-projs",JSON.stringify(projs));
     });
     loadprojcont.getElementsByClassName("delproj-btn")[0].addEventListener("click", e=>{if(projSelect.value != "null"){
         const rnpos = parseInt(projSelect.value);
         projs.splice(rnpos,1);
         for(let i=projSelect.selectedIndex+1;i<projSelect.options.length;i++){projSelect.options[i].value = (parseInt(projSelect.options[i].value)-1).toString();};
         projSelect.options[projSelect.selectedIndex].remove();
-        localStorage.setItem("fp-ext-projs",JSON.stringify(projs));
+        painter.storage.setItem("fp-ext-projs",JSON.stringify(projs));
       }
     });
-    loadprojcont.getElementsByClassName("delallproj-btn")[0].addEventListener("click", e=>{if(prompt("Are you sure (This is irreversible) y/n").toLowerCase() == "y"){localStorage.removeItem("fp-ext-projs");this.projs = [];for(let i=1;i<projSelect.options.length;i++){projSelect.options[i].remove();};};
+    loadprojcont.getElementsByClassName("delallproj-btn")[0].addEventListener("click", e=>{if(prompt("Are you sure (This is irreversible) y/n").toLowerCase() == "y"){painter.storage.removeItem("fp-ext-projs");this.projs = [];for(let i=1;i<projSelect.options.length;i++){projSelect.options[i].remove();};};
     });
     for(let i=0;i<projs.length;i++){addProj(i);}
   </script>
